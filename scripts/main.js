@@ -49,9 +49,9 @@
       resolutionLocation = this.gl.getUniformLocation(program, "u_resolution");
       this.gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height);
       tri = new Triangle(this.gl, vattrib, {
-        10: 10,
-        10: 10
-      });
+        width: 50,
+        height: 20
+      }, this.canvas);
       tri.render();
       return this.gl.flush();
     };
@@ -62,13 +62,14 @@
 
   Triangle = (function() {
 
-    function Triangle(gl, vattrib, size) {
+    function Triangle(gl, vattrib, size, canvas) {
       this.gl = gl;
       this.vattrib = vattrib;
       this.size = size;
+      this.canvas = canvas;
       this.pos = {
-        x: 0,
-        y: 0
+        x: this.canvas.width / 2,
+        y: this.canvas.height / 2
       };
       this.triangleVertexBuffer = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.triangleVertexBuffer);
@@ -83,7 +84,15 @@
     };
 
     Triangle.prototype.vertices = function() {
-      return [0, 0, 600, 0, 300, 600];
+      var x1, x2, x3, y1, y2, y3;
+      x1 = this.pos.x - (this.size.width / 2);
+      y1 = this.pos.y - (this.size.height / 2);
+      x2 = this.pos.x + (this.size.width / 2);
+      y2 = this.pos.y - (this.size.height / 2);
+      x3 = this.pos.x;
+      y3 = this.pos.y + (this.size.height / 2);
+      console.log([x1, y1, x2, y2, x3, y3]);
+      return [x1, y1, x2, y2, x3, y3];
     };
 
     Triangle.prototype.render = function() {

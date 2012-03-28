@@ -60,15 +60,15 @@ class Game
     resolutionLocation = @gl.getUniformLocation(program, "u_resolution")
     @gl.uniform2f(resolutionLocation, @canvas.width, @canvas.height)
 
-    tri = new Triangle(@gl, vattrib, {10,10})
+    tri = new Triangle(@gl, vattrib, {width: 50,height: 20}, @canvas)
     tri.render()
     @gl.flush()
 
 class Triangle
-  constructor: (@gl, @vattrib, @size) ->
+  constructor: (@gl, @vattrib, @size, @canvas) ->
     @pos =
-      x: 0
-      y: 0
+      x: (@canvas.width / 2)
+      y: (@canvas.height / 2)
 
     @triangleVertexBuffer = @gl.createBuffer()
     @gl.bindBuffer(@gl.ARRAY_BUFFER, @triangleVertexBuffer)
@@ -82,7 +82,14 @@ class Triangle
     @gl.bufferData(@gl.ARRAY_BUFFER, new Float32Array(@vertices()), @gl.STATIC_DRAW)
 
   vertices: ->
-    [0, 0, 600, 0, 300, 600]
+    x1 = @pos.x - (@size.width / 2)
+    y1 = @pos.y - (@size.height / 2)
+    x2 = @pos.x + (@size.width / 2)
+    y2 = @pos.y - (@size.height / 2)
+    x3 = @pos.x
+    y3 = @pos.y + (@size.height / 2)
+    console.log [x1, y1, x2, y2, x3, y3]
+    [x1, y1, x2, y2, x3, y3]
 
   render: ->
     @gl.drawArrays(@gl.TRIANGLES, 0, 3)
