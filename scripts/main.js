@@ -1,52 +1,67 @@
 (function() {
+  var Game;
+
+  Game = (function() {
+
+    function Game() {
+      this.canvas = $('#black')[0];
+      this.gl = this.canvas.getContext('experimental-webgl');
+    }
+
+    Game.prototype.init = function() {
+      var fshader, program, triangleVertexBuffer, vattrib, vertices, vshader;
+      this.gl.clearColor(0.2, 0.2, 1.0, 1.0);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+      fshader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+      this.gl.shaderSource(fshader, 'void main(void) {gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);}');
+      this.gl.compileShader(fshader);
+      if (!this.gl.getShaderParameter(fshader, this.gl.COMPILE_STATUS)) {
+        alert('Error during frag');
+        console.log(this.gl.getShaderInfoLog(fshader));
+        return false;
+      }
+      vshader = this.gl.createShader(this.gl.VERTEX_SHADER);
+      this.gl.shaderSource(vshader, 'attribute vec2 ppos; void main(void) {gl_Position = vec4(ppos.x, ppos.y, 0.0, 1.0);}');
+      this.gl.compileShader(vshader);
+      if (!this.gl.getShaderParameter(vshader, this.gl.COMPILE_STATUS)) {
+        alert('Error during vertex');
+        console.log(this.gl.getShaderInfoLog(vshader));
+        return false;
+      }
+      program = this.gl.createProgram();
+      this.gl.attachShader(program, fshader);
+      this.gl.attachShader(program, vshader);
+      this.gl.linkProgram(program);
+      if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+        alert('Error durning linking');
+        console.log('moo');
+        return false;
+      }
+      this.gl.validateProgram(program);
+      if (!this.gl.getProgramParameter(program, this.gl.VALIDATE_STATUS)) {
+        alert('Error validating');
+      }
+      this.gl.useProgram(program);
+      vattrib = this.gl.getAttribLocation(program, 'ppos');
+      if (vattrib === -1) alert('Error during Attr');
+      this.gl.enableVertexAttribArray(vattrib);
+      vertices = [0.0, 0.5, -0.5, -0.5, 0.5, -0.5];
+      triangleVertexBuffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, triangleVertexBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+      this.gl.vertexAttribPointer(vattrib, 2, this.gl.FLOAT, false, 0, 0);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+      return this.gl.flush();
+    };
+
+    return Game;
+
+  })();
 
   $.domReady(function() {
-    var canvas, fshader, gl, program, triangleVertexBuffer, vattrib, vertices, vshader;
-    canvas = $('#black')[0];
-    gl = canvas.getContext('experimental-webgl');
-    console.log(gl);
-    gl.clearColor(0.2, 0.2, 1.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    fshader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fshader, 'void main(void) {gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);}');
-    gl.compileShader(fshader);
-    if (!gl.getShaderParameter(fshader, gl.COMPILE_STATUS)) {
-      alert('Error during frag');
-      console.log(gl.getShaderInfoLog(fshader));
-      return false;
-    }
-    vshader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vshader, 'attribute vec2 ppos; void main(void) {gl_Position = vec4(ppos.x, ppos.y, 0.0, 1.0);}');
-    gl.compileShader(vshader);
-    if (!gl.getShaderParameter(vshader, gl.COMPILE_STATUS)) {
-      alert('Error during vertex');
-      console.log(gl.getShaderInfoLog(vshader));
-      return false;
-    }
-    program = gl.createProgram();
-    gl.attachShader(program, fshader);
-    gl.attachShader(program, vshader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      alert('Error durning linking');
-      console.log('moo');
-      return false;
-    }
-    gl.validateProgram(program);
-    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-      alert('Error validating');
-    }
-    gl.useProgram(program);
-    vattrib = gl.getAttribLocation(program, 'ppos');
-    if (vattrib === -1) alert('Error during Attr');
-    gl.enableVertexAttribArray(vattrib);
-    vertices = [0.0, 0.5, -0.5, -0.5, 0.5, -0.5];
-    triangleVertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(vattrib, 2, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    return gl.flush();
+    var game;
+    game = new Game;
+    return game.init();
   });
 
 }).call(this);
