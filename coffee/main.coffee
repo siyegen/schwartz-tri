@@ -1,3 +1,8 @@
+timeAtLastFrame = new Date().getTime()
+idealTimePerFrame = 1000 / 30
+leftover = 0.0
+frames = 0
+
 class Game
   constructor: ->
     @canvas = $('#black')[0]
@@ -20,9 +25,9 @@ class Game
          gl_Position = vec4(clipSpace, 0, 1);
       }"""
 
+
   init: ->
     @gl.clearColor(0.2, 0.2, 1.0, 1.0)
-    @gl.clear(@gl.COLOR_BUFFER_BIT | @gl.DEPTH_BUFFER_BIT)
 
     fshader = @gl.createShader(@gl.FRAGMENT_SHADER)
     @gl.shaderSource(fshader, 'void main(void) {gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);}')
@@ -60,9 +65,34 @@ class Game
     resolutionLocation = @gl.getUniformLocation(program, "u_resolution")
     @gl.uniform2f(resolutionLocation, @canvas.width, @canvas.height)
 
-    tri = new Triangle(@gl, vattrib, {width: 50,height: 20}, @canvas)
-    tri.render()
+    tri = @tri = new Triangle(@gl, vattrib, {width: 50,height: 20}, @canvas)
+    canvas = @canvas
+
+    @canvas.addEventListener 'mousemove', (event) ->
+      tri.update
+        x: event.clientX
+        y: canvas.height-event.clientY
+
+    @canvas.addEventListener 'mousedown', (event) ->
+      alert 'pew pew'
+
+  render: =>
+    @gl.clear(@gl.COLOR_BUFFER_BIT | @gl.DEPTH_BUFFER_BIT)
+    @tri.render()
     @gl.flush()
+
+  tick: =>
+    timeAtThisFrame = new Date().getTime()
+    timeSinceLastDoLogic = (timeAtThisFrame - timeAtLastFrame) + leftover
+    catchUpFrameCount = Math.floor(timeSinceLastDoLogic / idealTimePerFrame)
+
+    for i in [0..catchUpFrameCount]
+      frames++
+
+    @render()
+
+    leftover = timeSinceLastDoLogic - (catchUpFrameCount * idealTimePerFrame)
+    timeAtLastFrame = timeAtThisFrame
 
 class Triangle
   constructor: (@gl, @vattrib, @size, @canvas) ->
@@ -88,7 +118,7 @@ class Triangle
     y2 = @pos.y - (@size.height / 2)
     x3 = @pos.x
     y3 = @pos.y + (@size.height / 2)
-    console.log [x1, y1, x2, y2, x3, y3]
+    # console.log [x1, y1, x2, y2, x3, y3]
     [x1, y1, x2, y2, x3, y3]
 
   render: ->
@@ -97,3 +127,5 @@ class Triangle
 $.domReady ->
   game = new Game
   game.init()
+
+  setInterval game.tick, 1000/30
