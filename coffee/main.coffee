@@ -13,7 +13,7 @@ $.domReady ->
   if not gl.getShaderParameter(fshader, gl.COMPILE_STATUS)
     alert 'Error during frag'
     console.log gl.getShaderInfoLog(fshader)
-    false
+    return false
 
   vshader = gl.createShader(gl.VERTEX_SHADER)
   gl.shaderSource(vshader, 'attribute vec2 ppos; void main(void) {gl_Position = vec4(ppos.x, ppos.y, 0.0, 1.0);}')
@@ -21,13 +21,16 @@ $.domReady ->
   if not gl.getShaderParameter(vshader, gl.COMPILE_STATUS)
     alert 'Error during vertex'
     console.log gl.getShaderInfoLog(vshader)
-    false
+    return false
 
   program = gl.createProgram()
   gl.attachShader(program, fshader)
   gl.attachShader(program, vshader)
   gl.linkProgram(program)
-  alert 'Error durning linking' if not gl.getProgramParameter(program, gl.LINK_STATUS)
+  if not gl.getProgramParameter(program, gl.LINK_STATUS)
+    alert 'Error durning linking'
+    console.log 'moo'
+    return false
 
   gl.validateProgram(program)
   alert 'Error validating' if not gl.getProgramParameter(program, gl.VALIDATE_STATUS)
